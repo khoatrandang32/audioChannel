@@ -15,10 +15,34 @@ router.post("/create", (req, res) => {
   });
 });
 
+router.post("/find", async (req, res) => {
+  const { title } = req.body;
+
+  try {
+    if (title.trim() != "") {
+      var query = Audio.find({ title: { $regex: title, $options: "i" } })
+        .select({ episodes: 0, decription: 0, comments: 0 })
+        .populate("categories");
+      query.exec(function (err, docs) {
+        if (err) {
+          res.status(400).send(error);
+        } else {
+          res.send(docs);
+        }
+      });
+    } else {
+      res.send([]);
+    }
+  } catch (error) {
+    console.log("KHOA " + error);
+    res.status(400).send(error);
+  }
+});
+
 router.post("/getAudio", async (req, res) => {
   try {
     var query = Audio.find({})
-      .select({ episodes: 0, decription: 0,comments:0 })
+      .select({ episodes: 0, decription: 0, comments: 0 })
       .populate("categories");
     query.exec(function (err, docs) {
       if (err) {
@@ -40,6 +64,26 @@ router.post("/getAudio", async (req, res) => {
   }
 });
 
+router.post("/getByCategory", async (req, res) => {
+  const { categoryId } = req.body;
+
+  try {
+    var query = Audio.find({ categories: categoryId })
+      .select({ episodes: 0, decription: 0, comments: 0 })
+      .populate("categories");
+    //
+    query.exec(function (err, docs) {
+      if (err) {
+        res.status(400).send(error);
+      } else {
+        res.send(docs);
+      }
+    });
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
 router.get("/getAudio/:id", function (req, res) {
   var id = req.params.id;
   try {
@@ -49,7 +93,7 @@ router.get("/getAudio/:id", function (req, res) {
         path: "comments",
         populate: {
           path: "writer",
-          select: {  fullname: 1, avatar: 1 },
+          select: { fullname: 1, avatar: 1 },
         },
       });
     query.exec(function (err, docs) {

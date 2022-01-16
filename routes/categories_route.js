@@ -14,4 +14,28 @@ router.post("/create", (req, res) => {
 });
 
 
+router.post("/getAll", async (req, res) => {
+  try {
+    var query = Category.find({});
+    query.exec(function (err, docs) {
+      if (err) {
+        res.status(400).send(error);
+      } else {
+        res.send(docs);
+      }
+    });
+
+    // Audio.find({}, {}, (err, docs) => {
+    //   if (err) {
+    //     res.status(400).send(error);
+    //   } else {
+    //     res.send(docs.reverse());
+    //   }
+    // }).limit(req.body.limit).skip(req.body.skip).sort({createAt:-1});
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
+
 module.exports = router;
