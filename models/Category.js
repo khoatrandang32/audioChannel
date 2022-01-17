@@ -6,6 +6,10 @@ const CategorySchema = mongoose.Schema({
         unique: true,
         required: [true, 'Title is required']
     },
+    imgThumbnail:{
+        type: String,
+        required: [true, 'imgThumbnail is required']
+    },
 });
  
 module.exports = mongoose.model("Categories",CategorySchema)
