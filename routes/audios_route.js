@@ -3,6 +3,8 @@ const router = express.Router();
 const Audio = require("../models/Audio");
 const Comments = require("../models/Comments");
 
+const HomeCategory = require("../models/HomeCategory");
+
 router.get("/", (req, res) => {
   res.send("Audio");
 });
@@ -13,6 +15,38 @@ router.post("/create", (req, res) => {
     if (err) res.json({ message: err });
     else res.json(data);
   });
+});
+
+router.post("/createHomeCate", (req, res) => {
+  const category = new HomeCategory(req.body);
+  category.save((err, data) => {
+    if (err) res.json({ message: err });
+    else res.json(data);
+  });
+});
+
+router.post("/getHomeCate", (req, res) => {
+  try {
+    var query = HomeCategory.find({})
+      .populate(
+        {
+          path: "listAudio",
+          select: { episodes: 0, decription: 0, comments: 0},
+
+        }
+      );
+
+    query.exec(function (err, docs) {
+      if (err) {
+        res.status(400).send(error);
+      } else {
+        res.send(docs);
+      }
+    });
+  } catch (error) {
+    console.log("KHOA " + error);
+    res.status(400).send(error);
+  }
 });
 
 router.post("/find", async (req, res) => {
