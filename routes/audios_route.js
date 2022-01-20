@@ -31,7 +31,6 @@ router.post("/getHomeCate", (req, res) => {
       .populate(
         {
           path: "listAudio",
-          select: { episodes: 0, decription: 0, comments: 0},
           populate: {
             path: "categories",
           },
