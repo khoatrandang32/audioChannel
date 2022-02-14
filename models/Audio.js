@@ -26,9 +26,9 @@ const AudioSchema = mongoose.Schema({
         type: String,
         required: [true, 'Decription is required'],
     },
-    episodes:{
-        type: [String],
-        required: [true, 'Episodes is required'],
+    baseEpisode:{
+        type: String,
+        required: [true, 'baseEpisode is required'],
     },
     episodesAmount:{
         type:Number,

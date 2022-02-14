@@ -10,7 +10,6 @@ router.get("/", (req, res) => {
 });
 router.post("/create", (req, res) => {
   const audio = new Audio(req.body);
-  audio.episodesAmount = audio.episodes.length;
   audio.save((err, data) => {
     if (err) res.json({ message: err });
     else res.json(data);
@@ -31,7 +30,7 @@ router.post("/getHomeCate", (req, res) => {
       .populate(
         {
           path: "listAudio",
-          select: { episodes: 0, decription: 0, comments: 0},
+          select: { comments: 0},
           populate: {
             path: "categories",
           },
@@ -78,7 +77,7 @@ router.post("/find", async (req, res) => {
 router.post("/getAudio", async (req, res) => {
   try {
     var query = Audio.find({})
-      .select({ episodes: 0, decription: 0, comments: 0 })
+      .select({ comments: 0 })
       .populate("categories");
     query.exec(function (err, docs) {
       if (err) {
