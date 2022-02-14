@@ -104,7 +104,7 @@ router.post("/getByCategory", async (req, res) => {
 
   try {
     var query = Audio.find({ categories: categoryId })
-      .select({ episodes: 0, decription: 0, comments: 0 })
+      .select({ comments: 0 })
       .populate("categories");
     //
     query.exec(function (err, docs) {
