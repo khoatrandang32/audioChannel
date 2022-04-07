@@ -59,7 +59,7 @@ userSchema.methods.generateAuthToken = async function () {
 };
 
 userSchema.statics.findByCredentials = async (username, password) => {
-  const user = await User.findOne({ username }, (error, data) => {});
+  const user = await RenRoomUser.findOne({ username }, (error, data) => {});
 
   if ((user == null) | !user) {
     return null;
