@@ -26,12 +26,14 @@ app.use((req, res, next) => {
 require("dotenv/config");
 //import routes
 const userRoute = require("./routes/users_route");
+const renRoomUserRoute = require("./routes/renroom/renroom_user_route");
 const audioRoute = require("./routes/audios_route");
 const categoryRoute = require("./routes/categories_route");
 
 app.use("/users", userRoute);
 app.use("/audios", audioRoute);
 app.use("/categories", categoryRoute);
+app.use("/renroom_user", renRoomUserRoute);
 
 var server = require("http").Server(app);
 //ROUTES
