@@ -2,8 +2,6 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/Users");
 const auth = require("../middleware/auth");
-const { checkPosition } = require("../constants");
-const { Position } = require("../models/position");
 
 router.get("/", (req, res) => {
   res.send("User");
@@ -25,23 +23,75 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.post("/regist", async (req, res) => {
-  const { fullname, email, password, avatar } = req.body;
+router.post("/register", async (req, res) => {
+  const { phoneNumber, password } = req.body;
+
   try {
     const user = new User({
-      fullname,
-      email,
+      phoneNumber,
       password,
-      avatar,
     });
     user.save((err, data) => {
-      if (err) res.status(400).send({ error: err });
-      else res.json({ message: "OK" });
+
+      console.log(err);
+
+      if (err) {
+        if(err.code==11000){
+          res.send({ 
+            status:2,
+            message:"phoneNumber is not available!"
+          });
+
+        } else{
+          res.send({ 
+            status:1,
+            message:"failed"
+          });
+        }
+       
+      }
+      else {
+        res.send({ 
+          status:0,
+          message:"success"
+        });
+      }
     });
   } catch (error) {
-    res.status(400).send(error);
-  }
+    res.send({ 
+      status:1,
+      message:"failed"
+    });  }
 });
+
+
+router.post("/checkPhoneNumber", async (req, res) => {
+  const { phoneNumber } = req.body;
+  try {
+    User.find({ phoneNumber }, {}, (err, docs) => {
+      if (err) {
+        res.send({ 
+          status:1,
+          message:"failed"
+        });  
+
+      } else {
+        res.send({ 
+          status: docs.length>0?0:1,
+          message:docs.length>0?"success":"failed"
+        });  
+      }
+    });
+  } catch (error) {
+    res.send({ 
+      status:1,
+      message:"failed"
+    });  }
+});
+
+
+
+
 router.get("/userlist", auth, async (req, res) => {
   User.find({ active: true }, {}, (err, docs) => {
     if (err) {

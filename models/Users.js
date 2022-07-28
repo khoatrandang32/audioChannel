@@ -3,31 +3,30 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { Position } = require("../models/position");
-const { Long } = require("mongodb");
+
 
 const userSchema = mongoose.Schema({
   fullname: {
     type: String,
-    required: [true, "Fullname is required !"],
     trim: true,
   },
   avatar: {
     type: String,
-    required: [true, "Avatar is required !"],
   },
-  email: {
+  birthday:{
+    type: Number
+  },
+  phoneNumber: {
     type: String,
-    required: [true, "Email is required !"],
+    required: [true, "PhoneNumber is required !"],
     unique: true,
     lowercase: true,
     validate: {
-      validator: function (v) {
-        return /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
-          v
-        );
+      validator: function (number) {
+        return /(((\+|)84)|0)(3|5|7|8|9)+([0-9]{8})\b/
+        .test(number);
       },
-      message: (props) => `${props.value} is not a valid email!`,
+      message: (props) => `${props.value} is not a valid phonenumber!`,
     },
   },
   password: {
@@ -43,7 +42,6 @@ const userSchema = mongoose.Schema({
     {
       token: {
         type: String,
-        required: true,
       },
     },
   ],
