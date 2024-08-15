@@ -2,6 +2,12 @@ const express = require("express");
 const router = express.Router();
 const Category = require("../models/Category");
 
+const mongodb = require("../models/mongodb");
+const categories = mongodb.collection("categories");
+const audios = mongodb.collection("audios");
+const homecategories = mongodb.collection("homecategories");
+
+
 router.get("/", (req, res) => {
   res.send("Categories");
 });
@@ -14,24 +20,21 @@ router.post("/create", (req, res) => {
 });
 
 
-router.post("/getAll", async (req, res) => {
+router.get("/getAll", async (req, res) => {
   try {
-    var query = Category.find({});
-    query.exec(function (err, docs) {
-      if (err) {
-        res.status(400).send(error);
-      } else {
-        res.send(docs);
-      }
-    });
-
-    // Audio.find({}, {}, (err, docs) => {
-    //   if (err) {
-    //     res.status(400).send(error);
-    //   } else {
-    //     res.send(docs.reverse());
-    //   }
-    // }).limit(req.body.limit).skip(req.body.skip).sort({createAt:-1});
+    const query = {};
+    const options = {
+      projection: { comments: 0 },
+    };
+    var listData = []
+    const cursor = categories.find(query, options);
+    if ((await categories.countDocuments(query)) === 0) {
+      console.log("No documents found!");
+    }
+    for await (const doc of cursor) {
+      listData.push(doc);
+    }
+   res.send(listData);
   } catch (error) {
     res.status(400).send(error);
   }

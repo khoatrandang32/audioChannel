@@ -5,6 +5,55 @@ const Comments = require("../models/Comments");
 
 const HomeCategory = require("../models/HomeCategory");
 
+const mongodb = require("../models/mongodb");
+const { matches } = require("validator");
+const { ObjectID } = require("mongodb");
+const { ObjectId } = require("mongodb");
+const categories = mongodb.collection("categories");
+const audios = mongodb.collection("audios");
+const homecategories = mongodb.collection("homecategories");
+router.get("/getHomeCate", async (req, res) => {
+  try {
+    const query = {};
+    const options = {
+      projection: { comments: 0 },
+    };
+    var listData = []
+    const cursor = homecategories.aggregate([
+      {
+        $lookup: {
+          from: "audios",
+          localField: "listAudio",
+          foreignField: "_id",
+          as: "listAudio",
+          pipeline: [
+            {
+              $lookup: {
+                from: "categories",
+                localField: "categories",
+                foreignField: "_id",
+                as: "categories"
+              }
+            }
+          ]
+        },
+
+      },
+    ]);
+
+    if ((await homecategories.countDocuments(query)) === 0) {
+      console.log("No documents found!");
+    }
+    for await (const doc of cursor) {
+      listData.push(doc);
+    }
+    res.send(listData);
+  } catch (error) {
+    console.log("KHOA " + error);
+    res.status(400).send(error);
+  }
+});
+
 router.get("/", (req, res) => {
   res.send("Audio");
 });
@@ -24,47 +73,40 @@ router.post("/createHomeCate", (req, res) => {
   });
 });
 
-router.post("/getHomeCate", (req, res) => {
-  try {
-    var query = HomeCategory.find({})
-      .populate(
-        {
-          path: "listAudio",
-          select: { comments: 0},
-          populate: {
-            path: "categories",
-          },
-        }
-      );
-
-    query.exec(function (err, docs) {
-      if (err) {
-        res.status(400).send(error);
-      } else {
-        res.send(docs);
-      }
-    });
-  } catch (error) {
-    console.log("KHOA " + error);
-    res.status(400).send(error);
-  }
-});
-
 router.post("/find", async (req, res) => {
   const { title } = req.body;
 
   try {
     if (title.trim() != "") {
-      var query = Audio.find({ title: { $regex: title, $options: "i" } })
-        .select({ episodes: 0, decription: 0, comments: 0 })
-        .populate("categories");
-      query.exec(function (err, docs) {
-        if (err) {
-          res.status(400).send(error);
-        } else {
-          res.send(docs);
+      try {
+        var listData = []
+        const cursor = audios.aggregate([
+          // {
+          //   $match: {
+          //     title: {
+          //       $regex: title, $options: "i"
+          //     }
+          //   }
+          // },
+          { $match: { $text: { $search: title, } } },
+          {
+            $lookup: {
+              from: "categories",
+              localField: "categories",
+              foreignField: "_id",
+              as: "categories"
+            }
+          }
+        ]);
+
+        for await (const doc of cursor) {
+          listData.push(doc);
         }
-      });
+        res.send(listData);
+      } catch (error) {
+        console.log("KHOA " + error);
+        res.status(400).send(error);
+      }
     } else {
       res.send([]);
     }
@@ -74,49 +116,93 @@ router.post("/find", async (req, res) => {
   }
 });
 
-router.post("/getAudio", async (req, res) => {
+router.get("/getAudio", async (req, res) => {
   try {
-    var query = Audio.find({})
-      .select({ comments: 0 })
-      .populate("categories");
-    query.exec(function (err, docs) {
-      if (err) {
-        res.status(400).send(error);
-      } else {
-        res.send(docs);
-      }
-    });
-
-    // Audio.find({}, {}, (err, docs) => {
-    //   if (err) {
-    //     res.status(400).send(error);
-    //   } else {
-    //     res.send(docs.reverse());
-    //   }
-    // }).limit(req.body.limit).skip(req.body.skip).sort({createAt:-1});
+    const query = {};
+    const options = {
+      projection: { comments: 0 },
+    };
+    var listData = []
+    const cursor = audios.find(query, options);
+    if ((await audios.countDocuments(query)) === 0) {
+      console.log("No documents found!");
+    }
+    for await (const doc of cursor) {
+      listData.push(doc);
+    }
+    res.send(listData);
   } catch (error) {
     res.status(400).send(error);
   }
 });
 
-router.post("/getByCategory", async (req, res) => {
-  const { categoryId } = req.body;
+router.get("/getAudio2", async (req, res) => {
+  audios.createIndex({ "title": "text", });
+
 
   try {
-    var query = Audio.find({ categories: categoryId })
-      .select({ comments: 0 })
-      .populate("categories");
-    //
-    query.exec(function (err, docs) {
-      if (err) {
-        res.status(400).send(error);
-      } else {
-        res.send(docs);
-      }
-    });
+    var listData = []
+    const cursor = audios.aggregate([
+      { $match: { $text: { $search: "nhat", } } },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "categories",
+          foreignField: "_id",
+          as: "categories"
+        }
+      },
+    ]);
+
+    for await (const doc of cursor) {
+      listData.push(doc);
+    }
+    res.send(listData);
+  } catch (error) {
+    console.log("KHOA " + error);
+    res.status(400).send(error);
+  }
+});
+
+router.get("/getByCategory/:categoryId", async (req, res) => {
+  const { categoryId } = req.params;
+
+  console.log(categoryId);
+  try {
+    var listData = []
+    const cursor = audios.aggregate([
+      // {
+      //   $match: {
+      //     // categories: { $elemMatch: { $eq: { $oid: categories } } }
+      //     _id: {$eq :{$toObjectId: '620a24fafe0212af7cbb4915'}}
+      //   }
+      // },
+      {
+        $search: {
+          equals: {
+            path: "_id",
+            value: ObjectId("620a24fafe0212af7cbb4915")
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "categories",
+          foreignField: "_id",
+          as: "categories"
+        }
+      },
+    ]);
+    for await (const doc of cursor) {
+      listData.push(doc);
+    }
+    res.send(listData);
   } catch (error) {
     res.status(400).send(error);
   }
+
+
 });
 
 router.get("/getAudio/:id", function (req, res) {
