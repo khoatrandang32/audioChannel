@@ -1,6 +1,8 @@
 const express = require("express");
-const mongoose = require("mongoose");
+const { MongoClient } = require("mongodb");
+const uri = "mongodb+srv://khoatddev:KhoaKanji111@cluster0.mvaaj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
+const client = new MongoClient(uri);
 const app = express();
 
 app.use(express.json());
@@ -41,19 +43,7 @@ var server = require("http").Server(app);
 app.get("/", (req, res) => {
   res.send("We are on home");
 });
-mongoose.connect(
-  process.env.DB_CONNECTION,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-  },
-  () => {
-    console.log("Connected to MongoDB !");
-  }
-);
 
-server.listen(process.env.PORT || 3001, () => {
+server.listen(process.env.PORT || 3000, () => {
   console.log(`Server running on port ${process.env.PORT}`);
 });
